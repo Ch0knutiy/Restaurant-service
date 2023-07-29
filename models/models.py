@@ -12,8 +12,8 @@ class Menu(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     title = Column(String(200), nullable=False)
     description = Column(String(200), nullable=False)
-    submenus_count = Column(Integer(), nullable=False, default=0)
-    dishes_count = Column(Integer(), nullable=False, default=0)
+    #submenus_count = Column(Integer(), nullable=False, default=0)
+    #dishes_count = Column(Integer(), nullable=False, default=0)
 
 
 class Submenu(Base):
@@ -22,7 +22,7 @@ class Submenu(Base):
     title = Column(String(200), nullable=False)
     description = Column(String(200), nullable=False)
     menu_id = Column(UUID(as_uuid=True), ForeignKey("menus.id", ondelete='CASCADE'))
-    dishes_count = Column(Integer(), nullable=False, default=0)
+    #dishes_count = Column(Integer(), nullable=False, default=0)
 
 
 class Dish(Base):
