@@ -38,3 +38,12 @@ def delete_menu(id, db):
     query.delete(synchronize_session=False)
     db.commit()
     return {"ok": True}
+
+
+def submenus_count(id, db):
+    return db.query(models.Submenu.id).filter(models.Submenu.menu_id == id).count()
+
+
+def dishes_count(id, db):
+    return db.query(models.Dish.id).join(models.Submenu).where(models.Submenu.menu_id == id, models.Submenu.id ==
+                                                               models.Dish.submenu_id).count()

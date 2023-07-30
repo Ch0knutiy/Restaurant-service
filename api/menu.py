@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from schemas import schemas
 from sqlalchemy.orm import Session
 from services import menuService
@@ -15,7 +17,7 @@ async def get_menus(db: Session = Depends(get_db)):
 
 
 @router.get("/{id}")
-async def get_menu(id, db: Session = Depends(get_db)):
+async def get_menu(id: UUID, db: Session = Depends(get_db)):
     menu = menuService.get_menu(id, db)
     if not menu:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -29,7 +31,7 @@ async def create_menu(payload: schemas.MenuSchema, db: Session = Depends(get_db)
 
 
 @router.patch("/{id}", status_code=200)
-async def update_menu(id, payload: schemas.MenuSchema, db: Session = Depends(get_db)):
+async def update_menu(id: UUID, payload: schemas.MenuSchema, db: Session = Depends(get_db)):
     menu = menuService.update_menu(id, payload, db)
     if not menu:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -38,5 +40,5 @@ async def update_menu(id, payload: schemas.MenuSchema, db: Session = Depends(get
 
 
 @router.delete("/{id}", status_code=200)
-async def delete_menu(id, db: Session = Depends(get_db)):
+async def delete_menu(id: UUID, db: Session = Depends(get_db)):
     return menuService.delete_menu(id, db)

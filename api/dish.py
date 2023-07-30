@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from schemas import schemas
 from sqlalchemy.orm import Session
 from database import get_db
@@ -10,12 +12,12 @@ router = APIRouter()
 
 
 @router.get("/{menu_id}/submenus/{submenu_id}/dishes")
-async def get_dishes(submenu_id, db: Session = Depends(get_db)):
+async def get_dishes(submenu_id: UUID, db: Session = Depends(get_db)):
     return dishService.get_dishes(submenu_id, db)
 
 
 @router.get("/{menu_id}/submenus/{submenu_id}/dishes/{id}")
-async def get_dish(id, db: Session = Depends(get_db)):
+async def get_dish(id: UUID, db: Session = Depends(get_db)):
     dish = dishService.get_dish(id, db)
     if not dish:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -24,12 +26,12 @@ async def get_dish(id, db: Session = Depends(get_db)):
 
 
 @router.post("/{menu_id}/submenus/{submenu_id}/dishes", status_code=201)
-def create_dish(payload: schemas.DishSchema, submenu_id, db: Session = Depends(get_db)):
+def create_dish(payload: schemas.DishSchema, submenu_id: UUID, db: Session = Depends(get_db)):
     return dishService.create_dish(payload, submenu_id, db)
 
 
 @router.patch("/{menu_id}/submenus/{submenu_id}/dishes/{id}", status_code=200)
-async def update_dish(id, payload: schemas.DishSchema, db: Session = Depends(get_db)):
+async def update_dish(id: UUID, payload: schemas.DishSchema, db: Session = Depends(get_db)):
     dish = dishService.update_dish(id, payload, db)
     if not dish:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -38,5 +40,5 @@ async def update_dish(id, payload: schemas.DishSchema, db: Session = Depends(get
 
 
 @router.delete("/{menu_id}/submenus/{submenu_id}/dishes/{id}", status_code=200)
-async def delete_dish(id, db: Session = Depends(get_db)):
+async def delete_dish(id: UUID, db: Session = Depends(get_db)):
     return dishService.delete_dish(id, db)

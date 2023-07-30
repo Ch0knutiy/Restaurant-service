@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 
@@ -27,7 +29,7 @@ class DishSchema(BaseModel):
 
 
 class EnrichedMenuSchema(BaseModel):
-    id: str
+    id: UUID
     title: str
     description: str
     submenus_count: int
@@ -35,7 +37,7 @@ class EnrichedMenuSchema(BaseModel):
 
 
 class EnrichedSubmenuSchema(BaseModel):
-    id: str
+    id: UUID
     title: str
     description: str
     dishes_count: int

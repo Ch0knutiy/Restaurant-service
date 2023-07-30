@@ -2,6 +2,10 @@ from models import models
 from schemas import schemas
 
 
+def dishes_count(id, db):
+    return db.query(models.Dish.id).filter(models.Dish.submenu_id == id).count()
+
+
 def get_submenus(menu_id, db):
     return db.query(models.Submenu).filter(models.Submenu.menu_id == menu_id).all()
 
