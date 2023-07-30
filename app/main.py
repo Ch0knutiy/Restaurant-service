@@ -9,9 +9,9 @@ app.include_router(submenu.router, tags=['Submenus'], prefix='/api/v1/menus')
 app.include_router(dish.router, tags=['Dishes'], prefix='/api/v1/menus')
 
 
-@app.get("/")
+@app.get("/health", status_code=200)
 async def root():
-    return {"message": "root"}
+    return {"message": "Ок"}
 
 
 if __name__ == "__main__":

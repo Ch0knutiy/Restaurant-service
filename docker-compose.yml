@@ -2,9 +2,10 @@ version: '3.8'
 
 services:
   fastapi_ylab:
+    container_name: fastapi_ylab
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: /
+      dockerfile: app/Dockerfile
     environment:
       DATABASE_URL: "postgres_y_lab/postgres"
     entrypoint: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000"
@@ -12,6 +13,12 @@ services:
       - y_lab_network
     ports:
       - "8000:8000"
+    healthcheck:
+      test: curl --fail http://fastapi_ylab:8000/health || exit 1
+      interval: 15s
+      retries: 20
+      start_period: 10s
+      timeout: 10s
     depends_on:
       postgres_y_lab:
         condition: service_healthy
@@ -36,6 +43,18 @@ services:
       timeout: 30s
       retries: 5
       start_period: 80s
+
+  fastapi_ylab_tests:
+    container_name: fastapi_ylab_tests
+    build:
+      context: /
+      dockerfile: tests/Dockerfile
+    networks:
+      - y_lab_network
+    entrypoint: pytest -v
+    depends_on:
+      fastapi_ylab:
+        condition: service_healthy
 
 networks:
   y_lab_network:
