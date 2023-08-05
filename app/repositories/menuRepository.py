@@ -1,16 +1,19 @@
+from uuid import UUID
+
 from models import models
 from schemas import schemas
+from sqlalchemy.orm import Session
 
 
-def get_menus(db):
+def get_menus(db: Session) -> list[models.Menu]:
     return db.query(models.Menu).all()
 
 
-def get_menu(id, db):
+def get_menu(id: UUID, db: Session) -> models.Menu:
     return db.query(models.Menu).filter(models.Menu.id == id).first()
 
 
-def create_menu(payload: schemas.MenuSchema, db):
+def create_menu(payload: schemas.MenuSchema, db: Session) -> models.Menu:
     menu = models.Menu(**payload.model_dump())
     db.add(menu)
     db.commit()
@@ -18,7 +21,7 @@ def create_menu(payload: schemas.MenuSchema, db):
     return menu
 
 
-def update_menu(id, payload: schemas.MenuSchema, db):
+def update_menu(id: UUID, payload: schemas.MenuSchema, db: Session) -> models.Menu | None:
     query = db.query(models.Menu).filter(models.Menu.id == id)
     menu = query.first()
     if not menu:
@@ -30,7 +33,7 @@ def update_menu(id, payload: schemas.MenuSchema, db):
     return menu
 
 
-def delete_menu(id, db):
+def delete_menu(id: UUID, db: Session) -> dict[str, bool]:
     query = db.query(models.Menu).filter(models.Menu.id == id)
     menu = query.first()
     if not menu:
@@ -40,10 +43,10 @@ def delete_menu(id, db):
     return {'ok': True}
 
 
-def submenus_count(id, db):
+def submenus_count(id: UUID, db: Session) -> int:
     return db.query(models.Submenu.id).filter(models.Submenu.menu_id == id).count()
 
 
-def dishes_count(id, db):
+def dishes_count(id: UUID, db: Session) -> int:
     return db.query(models.Dish.id).join(models.Submenu).where(models.Submenu.menu_id == id,
                                                                models.Submenu.id == models.Dish.submenu_id).count()
