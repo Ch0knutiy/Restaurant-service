@@ -1,6 +1,7 @@
-from sqlalchemy import String, Column, ForeignKey, UUID, Integer
-from sqlalchemy.orm import DeclarativeBase
 from uuid import uuid4
+
+from sqlalchemy import UUID, Column, ForeignKey, String
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
@@ -12,8 +13,8 @@ class Menu(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     title = Column(String(200), nullable=False)
     description = Column(String(200), nullable=False)
-    #submenus_count = Column(Integer(), nullable=False, default=0)
-    #dishes_count = Column(Integer(), nullable=False, default=0)
+    # submenus_count = Column(Integer(), nullable=False, default=0)
+    # dishes_count = Column(Integer(), nullable=False, default=0)
 
 
 class Submenu(Base):
@@ -21,8 +22,8 @@ class Submenu(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     title = Column(String(200), nullable=False)
     description = Column(String(200), nullable=False)
-    menu_id = Column(UUID(as_uuid=True), ForeignKey("menus.id", ondelete='CASCADE'))
-    #dishes_count = Column(Integer(), nullable=False, default=0)
+    menu_id = Column(UUID(as_uuid=True), ForeignKey('menus.id', ondelete='CASCADE'))
+    # dishes_count = Column(Integer(), nullable=False, default=0)
 
 
 class Dish(Base):
@@ -31,4 +32,4 @@ class Dish(Base):
     title = Column(String(200), nullable=False)
     description = Column(String(200), nullable=False)
     price = Column(String(), nullable=False)
-    submenu_id = Column(UUID(as_uuid=True), ForeignKey("submenus.id", ondelete='CASCADE'))
+    submenu_id = Column(UUID(as_uuid=True), ForeignKey('submenus.id', ondelete='CASCADE'))

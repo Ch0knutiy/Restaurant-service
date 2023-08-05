@@ -34,7 +34,7 @@ def delete_dish(id, db):
     query = db.query(models.Dish).filter(models.Dish.id == id)
     dish = query.first()
     if not dish:
-        return {"ok": False}
+        return {'ok': False}
     query.delete(synchronize_session=False)
     db.commit()
-    return {"ok": True}
+    return {'ok': True}

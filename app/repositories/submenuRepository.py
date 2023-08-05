@@ -38,7 +38,7 @@ def delete_submenu(id, db):
     query = db.query(models.Submenu).filter(models.Submenu.id == id)
     submenu = query.first()
     if not submenu:
-        return {"ok": False}
+        return {'ok': False}
     query.delete(synchronize_session=False)
     db.commit()
-    return {"ok": True}
+    return {'ok': True}
