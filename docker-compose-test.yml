@@ -8,7 +8,7 @@ services:
       dockerfile: app/Dockerfile
     environment:
       DATABASE_URL: "postgres_y_lab/postgres"
-    entrypoint: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000"
+    entrypoint: sh -c "poetry run python main.py"
     networks:
       - y_lab_network
     ports:
@@ -49,6 +49,18 @@ services:
     container_name: y_lab_redis
     networks:
       - y_lab_network
+
+  fastapi_ylab_tests:
+    container_name: fastapi_ylab_tests
+    build:
+      context: /
+      dockerfile: tests/Dockerfile
+    networks:
+      - y_lab_network
+    entrypoint: pytest -v
+    depends_on:
+      fastapi_ylab:
+        condition: service_healthy
 
 networks:
   y_lab_network:

@@ -13,6 +13,7 @@ SQLAlchemy = "^2.0.19"
 psycopg2 = "^2.9.6"
 pydantic = "^2.1.1"
 pydantic-core = "^2.4.0"
+redis = "^4.6.0"
 
 
 [build-system]

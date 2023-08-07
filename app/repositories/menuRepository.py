@@ -9,7 +9,7 @@ def get_menus(db: Session) -> list[models.Menu]:
     return db.query(models.Menu).all()
 
 
-def get_menu(id: UUID, db: Session) -> models.Menu:
+def get_menu(id: UUID, db: Session) -> models.Menu | None:
     return db.query(models.Menu).filter(models.Menu.id == id).first()
 
 
