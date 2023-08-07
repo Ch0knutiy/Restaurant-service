@@ -8,7 +8,7 @@ services:
       dockerfile: app/Dockerfile
     environment:
       DATABASE_URL: "postgres_y_lab/postgres"
-    entrypoint: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000"
+    entrypoint: sh -c "poetry run python main.py"
     networks:
       - y_lab_network
     ports:
