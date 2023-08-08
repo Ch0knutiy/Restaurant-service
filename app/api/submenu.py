@@ -29,8 +29,8 @@ async def create_submenu(payload: schemas.SubmenuSchema, menu_id: UUID, db: Sess
 
 
 @router.patch('/{menu_id}/submenus/{id}', status_code=200)
-async def update_submenu(id: UUID, payload: schemas.SubmenuSchema, db: Session = Depends(get_db)):
-    submenu = submenuService.update_submenu(id, payload, db)
+async def update_submenu(id: UUID, menu_id: UUID, payload: schemas.SubmenuSchema, db: Session = Depends(get_db)):
+    submenu = submenuService.update_submenu(id, menu_id, payload, db)
     if not submenu:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'No submenu with this id: {id} found')
@@ -38,5 +38,5 @@ async def update_submenu(id: UUID, payload: schemas.SubmenuSchema, db: Session =
 
 
 @router.delete('/{menu_id}/submenus/{id}', status_code=200)
-async def delete_submenu(id: UUID, db: Session = Depends(get_db)):
-    return submenuService.delete_submenu(id, db)
+async def delete_submenu(id: UUID, menu_id: UUID, db: Session = Depends(get_db)):
+    return submenuService.delete_submenu(id, menu_id, db)

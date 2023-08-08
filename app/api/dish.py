@@ -24,13 +24,13 @@ async def get_dish(id: UUID, db: Session = Depends(get_db)):
 
 
 @router.post('/{menu_id}/submenus/{submenu_id}/dishes', status_code=201)
-def create_dish(payload: schemas.DishSchema, submenu_id: UUID, db: Session = Depends(get_db)):
-    return dishService.create_dish(payload, submenu_id, db)
+def create_dish(payload: schemas.DishSchema, submenu_id: UUID, menu_id: UUID, db: Session = Depends(get_db)):
+    return dishService.create_dish(payload, submenu_id, menu_id, db)
 
 
 @router.patch('/{menu_id}/submenus/{submenu_id}/dishes/{id}', status_code=200)
-async def update_dish(id: UUID, payload: schemas.DishSchema, db: Session = Depends(get_db)):
-    dish = dishService.update_dish(id, payload, db)
+async def update_dish(id: UUID, submenu_id: UUID, payload: schemas.DishSchema, db: Session = Depends(get_db)):
+    dish = dishService.update_dish(id, submenu_id, payload, db)
     if not dish:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'No submenu with this id: {id} found')
@@ -38,5 +38,5 @@ async def update_dish(id: UUID, payload: schemas.DishSchema, db: Session = Depen
 
 
 @router.delete('/{menu_id}/submenus/{submenu_id}/dishes/{id}', status_code=200)
-async def delete_dish(id: UUID, db: Session = Depends(get_db)):
-    return dishService.delete_dish(id, db)
+async def delete_dish(id: UUID, submenu_id: UUID, menu_id: UUID, db: Session = Depends(get_db)):
+    return dishService.delete_dish(id, submenu_id, menu_id, db)

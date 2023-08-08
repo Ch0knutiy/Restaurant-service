@@ -28,16 +28,26 @@ def get_dish(id: UUID, db: Session) -> models.Dish | None:
     return result
 
 
-def create_dish(payload: schemas.DishSchema, submenu_id: UUID, db: Session) -> models.Dish:
-    repositoryCache.flush()
+def create_dish(payload: schemas.DishSchema, submenu_id: UUID, menu_id: UUID, db: Session) -> models.Dish:
+    repositoryCache.del_cache('dishes' + str(submenu_id))
+    repositoryCache.del_cache('submenus' + str(menu_id))
+    repositoryCache.del_cache('submenu' + str(submenu_id))
+    repositoryCache.del_cache('menus')
+    repositoryCache.del_cache('menus' + str(menu_id))
     return dishRepository.create_dish(payload, submenu_id, db)
 
 
-def update_dish(id: UUID, payload, db: Session) -> models.Dish | None:
-    repositoryCache.flush()
+def update_dish(id: UUID, submenu_id: UUID, payload: schemas.DishSchema, db: Session) -> models.Dish | None:
+    repositoryCache.del_cache('dishes' + str(submenu_id))
+    repositoryCache.del_cache('dish' + str(id))
     return dishRepository.update_dish(id, payload, db)
 
 
-def delete_dish(id: UUID, db: Session) -> dict[str, bool]:
-    repositoryCache.flush()
+def delete_dish(id: UUID, submenu_id: UUID, menu_id: UUID, db: Session) -> dict[str, bool]:
+    repositoryCache.del_cache('dishes' + str(submenu_id))
+    repositoryCache.del_cache('dish' + str(id))
+    repositoryCache.del_cache('submenus' + str(menu_id))
+    repositoryCache.del_cache('submenu' + str(submenu_id))
+    repositoryCache.del_cache('menus')
+    repositoryCache.del_cache('menus' + str(menu_id))
     return dishRepository.delete_dish(id, db)
