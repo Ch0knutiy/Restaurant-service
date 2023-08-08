@@ -37,7 +37,7 @@ def get_menu(id: UUID, db: Session) -> schemas.EnrichedMenuSchema | None:
     result = repositoryCache.get_cache('menus' + str(id))
     if not result:
         result = enrich_menu(menuRepository.get_menu(id, db), db)
-        repositoryCache.set_cache('menus', json.dumps(jsonable_encoder(result)))
+        repositoryCache.set_cache('menus' + str(id), json.dumps(jsonable_encoder(result)))
     else:
         result = json.loads(result)
     return result
