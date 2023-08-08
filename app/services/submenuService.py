@@ -8,6 +8,17 @@ from schemas import schemas
 from sqlalchemy.orm import Session
 
 
+def clear_submenu_cache(menu_id: UUID, id: UUID | None = None) -> None:
+    repositoryCache.del_cache('submenus' + str(menu_id))
+    if id:
+        repositoryCache.del_cache('submenu' + str(id))
+
+
+def clear_menu_cache(menu_id: UUID) -> None:
+    repositoryCache.del_cache('menus')
+    repositoryCache.del_cache('menus' + str(menu_id))
+
+
 def enrich_submenu(submenu: models.Submenu, db: Session) -> schemas.EnrichedSubmenuSchema | None:
     if not submenu:
         return None
@@ -43,21 +54,17 @@ def get_submenu(id: UUID, db: Session) -> schemas.EnrichedSubmenuSchema | None:
 
 
 def create_submenu(payload: schemas.SubmenuSchema, menu_id: UUID, db: Session) -> models.Submenu:
-    repositoryCache.del_cache('menus')
-    repositoryCache.del_cache('menus' + str(menu_id))
-    repositoryCache.del_cache('submenus' + str(menu_id))
+    clear_menu_cache(menu_id)
+    clear_submenu_cache(menu_id)
     return submenuRepository.create_submenu(payload, menu_id, db)
 
 
 def update_submenu(id: UUID, menu_id: UUID, payload: schemas.SubmenuSchema, db: Session) -> models.Submenu | None:
-    repositoryCache.del_cache('submenus' + str(menu_id))
-    repositoryCache.del_cache('submenu' + str(id))
+    clear_submenu_cache(menu_id, id)
     return submenuRepository.update_submenu(id, payload, db)
 
 
 def delete_submenu(id: UUID, menu_id: UUID, db: Session) -> dict[str, bool]:
-    repositoryCache.del_cache('submenus' + str(menu_id))
-    repositoryCache.del_cache('submenu' + str(id))
-    repositoryCache.del_cache('menus')
-    repositoryCache.del_cache('menus' + str(menu_id))
+    clear_submenu_cache(menu_id, id)
+    clear_menu_cache(menu_id)
     return submenuRepository.delete_submenu(id, db)

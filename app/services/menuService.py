@@ -8,6 +8,12 @@ from schemas import schemas
 from sqlalchemy.orm import Session
 
 
+def clear_menu_cache(id: UUID | None = None):
+    repositoryCache.del_cache('menus')
+    if id:
+        repositoryCache.del_cache('menus' + str(id))
+
+
 def enrich_menu(menu: models.Menu, db: Session) -> schemas.EnrichedMenuSchema | None:
     if not menu:
         return None
@@ -44,17 +50,15 @@ def get_menu(id: UUID, db: Session) -> schemas.EnrichedMenuSchema | None:
 
 
 def create_menu(payload: schemas.MenuSchema, db: Session) -> models.Menu:
-    repositoryCache.del_cache('menus')
+    clear_menu_cache()
     return menuRepository.create_menu(payload, db)
 
 
 def update_menu(id: UUID, payload: schemas.MenuSchema, db: Session) -> models.Menu | None:
-    repositoryCache.del_cache('menus')
-    repositoryCache.del_cache('menus' + str(id))
+    clear_menu_cache(id)
     return menuRepository.update_menu(id, payload, db)
 
 
 def delete_menu(id: UUID, db: Session) -> dict[str, bool]:
-    repositoryCache.del_cache('menus')
-    repositoryCache.del_cache('menus' + str(id))
+    clear_menu_cache(id)
     return menuRepository.delete_menu(id, db)

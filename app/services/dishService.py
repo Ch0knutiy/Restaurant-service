@@ -8,6 +8,19 @@ from schemas import schemas
 from sqlalchemy.orm import Session
 
 
+def clear_upper_cache(menu_id: UUID, submenu_id: UUID) -> None:
+    repositoryCache.del_cache('submenus' + str(menu_id))
+    repositoryCache.del_cache('submenu' + str(submenu_id))
+    repositoryCache.del_cache('menus')
+    repositoryCache.del_cache('menus' + str(menu_id))
+
+
+def clear_dish_cache(submenu_id: UUID, id: UUID | None = None) -> None:
+    repositoryCache.del_cache('dishes' + str(submenu_id))
+    if id:
+        repositoryCache.del_cache('dish' + str(id))
+
+
 def get_dishes(submenu_id: UUID, db: Session) -> list[models.Dish]:
     result = repositoryCache.get_cache('dishes' + str(submenu_id))
     if not result:
@@ -29,25 +42,17 @@ def get_dish(id: UUID, db: Session) -> models.Dish | None:
 
 
 def create_dish(payload: schemas.DishSchema, submenu_id: UUID, menu_id: UUID, db: Session) -> models.Dish:
-    repositoryCache.del_cache('dishes' + str(submenu_id))
-    repositoryCache.del_cache('submenus' + str(menu_id))
-    repositoryCache.del_cache('submenu' + str(submenu_id))
-    repositoryCache.del_cache('menus')
-    repositoryCache.del_cache('menus' + str(menu_id))
+    clear_dish_cache(submenu_id)
+    clear_upper_cache(menu_id, submenu_id)
     return dishRepository.create_dish(payload, submenu_id, db)
 
 
 def update_dish(id: UUID, submenu_id: UUID, payload: schemas.DishSchema, db: Session) -> models.Dish | None:
-    repositoryCache.del_cache('dishes' + str(submenu_id))
-    repositoryCache.del_cache('dish' + str(id))
+    clear_dish_cache(submenu_id, id)
     return dishRepository.update_dish(id, payload, db)
 
 
 def delete_dish(id: UUID, submenu_id: UUID, menu_id: UUID, db: Session) -> dict[str, bool]:
-    repositoryCache.del_cache('dishes' + str(submenu_id))
-    repositoryCache.del_cache('dish' + str(id))
-    repositoryCache.del_cache('submenus' + str(menu_id))
-    repositoryCache.del_cache('submenu' + str(submenu_id))
-    repositoryCache.del_cache('menus')
-    repositoryCache.del_cache('menus' + str(menu_id))
+    clear_dish_cache(submenu_id, id)
+    clear_upper_cache(menu_id, submenu_id)
     return dishRepository.delete_dish(id, db)
