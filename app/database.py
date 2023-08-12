@@ -1,17 +1,17 @@
 from models.models import Base
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-engine = create_engine('postgresql+psycopg2://postgres:root@postgres_y_lab/postgres')
-# engine = create_engine('postgresql+psycopg2://postgres:root@localhost/postgres')
-Base.metadata.drop_all(engine)
-Base.metadata.create_all(engine)
-SessionLocal = sessionmaker(autoflush=False, bind=engine)
+# engine = create_engine('postgresql+asyncpg://postgres:root@postgres_y_lab/postgres')
+engine = create_async_engine('postgresql+asyncpg://postgres:root@localhost/postgres')
+async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def get_session() -> AsyncSession:
+    async with async_session() as session:
+        yield session

@@ -1,6 +1,7 @@
 import json
 from uuid import UUID
 
+from fastapi import BackgroundTasks
 from fastapi.encoders import jsonable_encoder
 from models import models
 from repositories import repositoryCache, submenuRepository
@@ -33,38 +34,39 @@ async def enrich_submenu(submenu: models.Submenu, db: Session) -> schemas.Enrich
 
 async def get_submenus(menu_id: UUID, db: Session) -> list[schemas.EnrichedSubmenuSchema]:
     result = repositoryCache.get_cache('submenus' + str(menu_id))
-    if not result:
-        result = []
-        for submenu in submenuRepository.get_submenus(menu_id, db):
-            result.append(enrich_submenu(submenu, db))
-        repositoryCache.set_cache('submenus' + str(menu_id), json.dumps(jsonable_encoder(result)))
-    else:
-        result = json.loads(result)
+    if result:
+        return json.loads(result)
+    result = []
+    for submenu in await submenuRepository.get_submenus(menu_id, db):
+        result.append(await enrich_submenu(submenu, db))
+    repositoryCache.set_cache('submenus' + str(menu_id), json.dumps(jsonable_encoder(result)))
     return result
 
 
 async def get_submenu(id: UUID, db: Session) -> schemas.EnrichedSubmenuSchema | None:
     result = repositoryCache.get_cache('submenu' + str(id))
-    if not result:
-        result = enrich_submenu(submenuRepository.get_submenu(id, db), db)
-        repositoryCache.set_cache('submenu' + str(id), json.dumps(jsonable_encoder(result)))
-    else:
-        result = json.loads(result)
+    if result:
+        return json.loads(result)
+    result = await enrich_submenu(await submenuRepository.get_submenu(id, db), db)
+    repositoryCache.set_cache('submenu' + str(id), json.dumps(jsonable_encoder(result)))
     return result
 
 
-async def create_submenu(payload: schemas.SubmenuSchema, menu_id: UUID, db: Session) -> models.Submenu:
-    clear_menu_cache(menu_id)
-    clear_submenu_cache(menu_id)
-    return submenuRepository.create_submenu(payload, menu_id, db)
+async def create_submenu(payload: schemas.SubmenuSchema, menu_id: UUID, background_tasks: BackgroundTasks,
+                         db: Session) -> models.Submenu:
+    background_tasks.add_task(clear_menu_cache, menu_id)
+    background_tasks.add_task(clear_submenu_cache, menu_id, None)
+    return await submenuRepository.create_submenu(payload, menu_id, db)
 
 
-async def update_submenu(id: UUID, menu_id: UUID, payload: schemas.SubmenuSchema, db: Session) -> models.Submenu | None:
-    clear_submenu_cache(menu_id, id)
-    return submenuRepository.update_submenu(id, payload, db)
+async def update_submenu(id: UUID, menu_id: UUID, payload: schemas.SubmenuSchema, background_tasks: BackgroundTasks,
+                         db: Session) -> models.Submenu | None:
+    background_tasks.add_task(clear_submenu_cache, menu_id, id)
+    return await submenuRepository.update_submenu(id, payload, db)
 
 
-async def delete_submenu(id: UUID, menu_id: UUID, db: Session) -> dict[str, bool]:
-    clear_submenu_cache(menu_id, id)
-    clear_menu_cache(menu_id)
-    return submenuRepository.delete_submenu(id, db)
+async def delete_submenu(id: UUID, menu_id: UUID, background_tasks: BackgroundTasks,
+                         db: Session) -> dict[str, bool]:
+    background_tasks.add_task(clear_menu_cache, menu_id)
+    background_tasks.add_task(clear_submenu_cache, menu_id, id)
+    return await submenuRepository.delete_submenu(id, db)
