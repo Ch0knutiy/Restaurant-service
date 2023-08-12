@@ -2,51 +2,50 @@ from uuid import UUID
 
 from models import models
 from schemas import schemas
-from sqlalchemy.orm import Session
+from sqlalchemy import delete, func, select, union_all, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-def get_menus(db: Session) -> list[models.Menu]:
-    return db.query(models.Menu).all()
+async def get_menus(db: AsyncSession) -> list[models.Menu]:
+    result = await db.execute(select(models.Menu))
+    return list[models.Menu](result.scalars().all())
 
 
-def get_menu(id: UUID, db: Session) -> models.Menu | None:
-    return db.query(models.Menu).filter(models.Menu.id == id).first()
+async def get_menu(id: UUID, db: AsyncSession) -> models.Menu | None:
+    result = await db.execute(select(models.Menu).filter(models.Menu.id == id))
+    return result.scalars().first()
 
 
-def create_menu(payload: schemas.MenuSchema, db: Session) -> models.Menu:
+async def create_menu(payload: schemas.MenuSchema, db: AsyncSession) -> models.Menu:
     menu = models.Menu(**payload.model_dump())
     db.add(menu)
-    db.commit()
-    db.refresh(menu)
+    await db.commit()
     return menu
 
 
-def update_menu(id: UUID, payload: schemas.MenuSchema, db: Session) -> models.Menu | None:
-    query = db.query(models.Menu).filter(models.Menu.id == id)
-    menu = query.first()
-    if not menu:
-        return None
-    update_data = payload.model_dump(exclude_unset=True)
-    query.filter(models.Menu.id == id).update(update_data, synchronize_session=False)
-    db.commit()
-    db.refresh(menu)
+async def update_menu(id: UUID, payload: schemas.MenuSchema, db: AsyncSession) -> models.Menu | None:
+    query = await db.execute(update(models.Menu).
+                             where(models.Menu.id == id).
+                             values(payload.model_dump(exclude_unset=True)).
+                             returning(models.Menu))
+    menu = query.scalars().first()
+    await db.commit()
     return menu
 
 
-def delete_menu(id: UUID, db: Session) -> dict[str, bool]:
-    query = db.query(models.Menu).filter(models.Menu.id == id)
-    menu = query.first()
+async def delete_menu(id: UUID, db: AsyncSession) -> dict[str, bool]:
+    query = await db.execute(delete(models.Menu).where(models.Menu.id == id).returning(models.Menu))
+    menu = query.scalars().first()
     if not menu:
         return {'ok': False}
-    query.delete(synchronize_session=False)
-    db.commit()
+    await db.commit()
     return {'ok': True}
 
 
-def submenus_count(id: UUID, db: Session) -> int:
-    return db.query(models.Submenu.id).filter(models.Submenu.menu_id == id).count()
-
-
-def dishes_count(id: UUID, db: Session) -> int:
-    return db.query(models.Dish.id).join(models.Submenu).where(models.Submenu.menu_id == id,
-                                                               models.Submenu.id == models.Dish.submenu_id).count()
+async def menu_counts(id: UUID, db: AsyncSession) -> list[int]:
+    sub_select_for_submenu = select(models.Submenu.id).filter(models.Submenu.menu_id == id)
+    sub_select_for_dishes = select(models.Dish.id).join(models.Submenu).\
+        where(models.Submenu.menu_id == id, models.Submenu.id == models.Dish.submenu_id)
+    result = await db.execute(union_all(select(func.count()).select_from(sub_select_for_submenu),
+                                        select(func.count()).select_from(sub_select_for_dishes)))
+    return list[int](result.scalars().all())
