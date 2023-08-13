@@ -1,17 +1,18 @@
-import redis_connection
+from redis.asyncio import Redis
 
 
-def set_cache(key: str, value: str) -> None:
-    redis_connection.r.set(key, value, 120)
+async def set_cache(key: str, value: str, redis: Redis) -> None:
+    await redis.set(key, value, 120)
 
 
-def get_cache(key: str) -> str:
-    return redis_connection.r.get(key)
+async def get_cache(key: str, redis: Redis):
+    result = await redis.get(key)
+    return result
 
 
-def del_cache(key: str) -> None:
-    redis_connection.r.delete(key)
+async def del_cache(key: str, redis: Redis) -> None:
+    await redis.delete(key)
 
 
-def flush() -> None:
-    redis_connection.r.flushall()
+async def flush(redis: Redis) -> None:
+    await redis.flushall()
