@@ -6,6 +6,15 @@ from sqlalchemy import delete, func, select, union_all, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+async def menu_counts(id: UUID, db: AsyncSession) -> list[int]:
+    sub_select_for_submenu = select(models.Submenu.id).filter(models.Submenu.menu_id == id)
+    sub_select_for_dishes = select(models.Dish.id).join(models.Submenu).\
+        where(models.Submenu.menu_id == id, models.Submenu.id == models.Dish.submenu_id)
+    result = await db.execute(union_all(select(func.count()).select_from(sub_select_for_submenu),
+                                        select(func.count()).select_from(sub_select_for_dishes)))
+    return list[int](result.scalars().all())
+
+
 async def get_menus(db: AsyncSession) -> list[models.Menu]:
     result = await db.execute(select(models.Menu))
     return list[models.Menu](result.scalars().all())
@@ -40,12 +49,3 @@ async def delete_menu(id: UUID, db: AsyncSession) -> dict[str, bool]:
         return {'ok': False}
     await db.commit()
     return {'ok': True}
-
-
-async def menu_counts(id: UUID, db: AsyncSession) -> list[int]:
-    sub_select_for_submenu = select(models.Submenu.id).filter(models.Submenu.menu_id == id)
-    sub_select_for_dishes = select(models.Dish.id).join(models.Submenu).\
-        where(models.Submenu.menu_id == id, models.Submenu.id == models.Dish.submenu_id)
-    result = await db.execute(union_all(select(func.count()).select_from(sub_select_for_submenu),
-                                        select(func.count()).select_from(sub_select_for_dishes)))
-    return list[int](result.scalars().all())

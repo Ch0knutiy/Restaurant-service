@@ -1,13 +1,13 @@
 import uvicorn
-from api import menu
+from api import dish, menu, submenu
 from database import init_models
 from fastapi import FastAPI
 
 app = FastAPI()
 
 app.include_router(menu.router, tags=['Menus'], prefix='/api/v1/menus')
-# app.include_router(submenu.router, tags=['Submenus'], prefix='/api/v1/menus')
-# app.include_router(dish.router, tags=['Dishes'], prefix='/api/v1/menus')
+app.include_router(submenu.router, tags=['Submenus'], prefix='/api/v1/menus')
+app.include_router(dish.router, tags=['Dishes'], prefix='/api/v1/menus')
 
 
 @app.on_event('startup')

@@ -2,42 +2,41 @@ from uuid import UUID
 
 from models import models
 from schemas import schemas
-from sqlalchemy.orm import Session
+from sqlalchemy import delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-def get_dishes(submenu_id: UUID, db: Session) -> list[models.Dish]:
-    return db.query(models.Dish).filter(models.Dish.submenu_id == submenu_id).all()
+async def get_dishes(submenu_id: UUID, db: AsyncSession) -> list[models.Dish]:
+    result = await db.execute(select(models.Dish).filter(models.Dish.submenu_id == submenu_id))
+    return list[models.Dish](result.scalars().all())
 
 
-def get_dish(id: UUID, db: Session) -> models.Dish:
-    return db.query(models.Dish).filter(models.Dish.id == id).first()
+async def get_dish(id: UUID, db: AsyncSession) -> models.Dish:
+    result = await db.execute(select(models.Dish).filter(models.Dish.id == id))
+    return result.scalars().first()
 
 
-def create_dish(payload: schemas.DishSchema, submenu_id: UUID, db: Session) -> models.Dish:
+async def create_dish(payload: schemas.DishSchema, submenu_id: UUID, db: AsyncSession) -> models.Dish:
     dish = models.Dish(**payload.model_dump(), submenu_id=submenu_id)
     db.add(dish)
-    db.commit()
-    db.refresh(dish)
+    await db.commit()
     return dish
 
 
-def update_dish(id: UUID, payload: schemas.DishSchema, db: Session) -> models.Dish | None:
-    query = db.query(models.Dish).filter(models.Dish.id == id)
-    dish = query.first()
-    if not dish:
-        return None
-    update_data = payload.model_dump(exclude_unset=True)
-    query.filter(models.Dish.id == id).update(update_data, synchronize_session=False)
-    db.commit()
-    db.refresh(dish)
+async def update_dish(id: UUID, payload: schemas.DishSchema, db: AsyncSession) -> models.Dish | None:
+    query = await db.execute(update(models.Dish).
+                             where(models.Dish.id == id).
+                             values(payload.model_dump(exclude_unset=True)).
+                             returning(models.Dish))
+    dish = query.scalars().first()
+    await db.commit()
     return dish
 
 
-def delete_dish(id: UUID, db: Session) -> dict[str, bool]:
-    query = db.query(models.Dish).filter(models.Dish.id == id)
-    dish = query.first()
+async def delete_dish(id: UUID, db: AsyncSession) -> dict[str, bool]:
+    query = await db.execute(delete(models.Dish).where(models.Dish.id == id).returning(models.Dish))
+    dish = query.scalars().first()
     if not dish:
         return {'ok': False}
-    query.delete(synchronize_session=False)
-    db.commit()
+    await db.commit()
     return {'ok': True}
