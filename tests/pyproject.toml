@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.10"
 httpx = "^0.24.1"
 pytest = "^7.4"
+pytest-asyncio = "*"
 
 
 [build-system]

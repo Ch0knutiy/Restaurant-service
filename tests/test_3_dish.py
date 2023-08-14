@@ -1,6 +1,5 @@
-import httpx
+import pytest
 
-client = httpx.Client()
 uuidMenu = ''
 uuidSubmenu = ''
 uuid = ''
@@ -16,55 +15,59 @@ dishDescriptionUpdate = 'new dish description 1'
 dishPriceUpdate = '20.20'
 
 
-def test_get_dishes():
-    response = client.post('http://fastapi_ylab:8000/api/v1/menus/', json={
+@pytest.mark.asyncio
+async def test_get_dishes(client, host):
+    response = await client.post(f'http://{host}:8000/api/v1/menus/', json={
         'title': menuTitle,
         'description': menuDescription
     })
     assert response.status_code == 201
     global uuidMenu, uuidSubmenu
     uuidMenu = response.json()['id']
-    response = client.post('http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus', json={
+    response = await client.post(f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus', json={
         'title': submenuTitle,
         'description': submenuDescription
     })
     assert response.status_code == 201
     uuidSubmenu = response.json()['id']
-    response = client.get('http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes')
+    response = await client.get(f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes')
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_create_dish():
-    response = client.post('http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes',
-                           json={
-                               'title': dishTitle,
-                               'description': dishDescription,
-                               'price': dishPrice
-                           })
+@pytest.mark.asyncio
+async def test_create_dish(client, host):
+    response = await client.post(f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes',
+                                 json={
+                                     'title': dishTitle,
+                                     'description': dishDescription,
+                                     'price': dishPrice
+                                 })
     assert response.status_code == 201
     assert response.json()['title'] == dishTitle
     assert response.json()['description'] == dishDescription
     assert response.json()['price'] == dishPrice
     global uuid
     uuid = response.json()['id']
-    response = client.get('http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes')
+    response = await client.get(f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes')
     assert response.status_code == 200
     assert response.json() != []
 
 
-def test_get_dish():
-    response = client.get(
-        'http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes/' + uuid)
+@pytest.mark.asyncio
+async def test_get_dish(client, host):
+    response = await client.get(
+        f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes/{uuid}')
     assert response.status_code == 200
     assert response.json()['title'] == dishTitle
     assert response.json()['description'] == dishDescription
     assert response.json()['price'] == dishPrice
 
 
-def test_update_dish():
-    response = client.patch(
-        'http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes/' + uuid,
+@pytest.mark.asyncio
+async def test_update_dish(client, host):
+    response = await client.patch(
+        f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes/{uuid}',
         json={'title': dishTitleUpdate,
               'description': dishDescriptionUpdate,
               'price': dishPriceUpdate
@@ -73,26 +76,27 @@ def test_update_dish():
     assert response.json()['title'] == dishTitleUpdate
     assert response.json()['description'] == dishDescriptionUpdate
     assert response.json()['price'] == dishPriceUpdate
-    response = client.get(
-        'http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes/' + uuid)
+    response = await client.get(
+        f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes/{uuid}')
     assert response.status_code == 200
     assert response.json()['title'] == dishTitleUpdate
     assert response.json()['description'] == dishDescriptionUpdate
     assert response.json()['price'] == dishPriceUpdate
 
 
-def test_delete_dish():
-    response = client.delete(
-        'http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes/' + uuid)
+@pytest.mark.asyncio
+async def test_delete_dish(client, host):
+    response = await client.delete(
+        f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes/{uuid}')
     assert response.status_code == 200
-    response = client.get('http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes')
+    response = await client.get(f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes')
     assert response.status_code == 200
     assert response.json() == []
-    response = client.get(
-        'http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu + '/dishes/' + uuid)
+    response = await client.get(
+        f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}/dishes/{uuid}')
     assert response.status_code == 404
     assert response.json()['detail'] == 'dish not found'
-    response = client.delete('http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu + '/submenus/' + uuidSubmenu)
+    response = await client.delete(f'http://{host}:8000/api/v1/menus/{uuidMenu}/submenus/{uuidSubmenu}')
     assert response.status_code == 200
-    response = client.delete('http://fastapi_ylab:8000/api/v1/menus/' + uuidMenu)
+    response = await client.delete(f'http://{host}:8000/api/v1/menus/{uuidMenu}')
     assert response.status_code == 200
