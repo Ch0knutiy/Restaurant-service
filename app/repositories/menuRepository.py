@@ -6,6 +6,11 @@ from sqlalchemy import delete, func, select, union_all, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+async def get_menus_full(db: AsyncSession):
+    result = await db.execute(select(models.Menu))
+    return result.scalars().all()
+
+
 async def menu_counts(id: UUID, db: AsyncSession) -> list[int]:
     sub_select_for_submenu = select(models.Submenu.id).filter(models.Submenu.menu_id == id)
     sub_select_for_dishes = select(models.Dish.id).join(models.Submenu).\

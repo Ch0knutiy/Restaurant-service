@@ -11,6 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 router = APIRouter()
 
 
+@router.get('/full')
+async def get_menus_full(db: AsyncSession = Depends(get_session), rd: Redis = Depends(get_redis)):
+    return await menuService.get_menus_full(db, rd)
+
+
 @router.get('/')
 async def get_menus(db: AsyncSession = Depends(get_session), rd: Redis = Depends(get_redis)):
     return await menuService.get_menus(db, rd)
