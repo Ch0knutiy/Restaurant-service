@@ -7,8 +7,15 @@ from redis_connection import get_redis
 from schemas import schemas
 from services import menuService
 from sqlalchemy.ext.asyncio import AsyncSession
+from tasks.tasks import get_xlsx_full_menu
 
 router = APIRouter()
+
+
+@router.get('/full_file')
+async def get_xlsx_menus():
+    get_xlsx_full_menu.delay()
+    return {'ok': True}
 
 
 @router.get('/full')
