@@ -1,8 +1,8 @@
 from models.models import Base
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-# engine = create_async_engine('postgresql+asyncpg://postgres:root@postgres_y_lab/postgres')
-engine = create_async_engine('postgresql+asyncpg://postgres:root@localhost/postgres')
+engine = create_async_engine('postgresql+asyncpg://postgres:root@postgres_restaurant/postgres')
+# engine = create_async_engine('postgresql+asyncpg://postgres:root@localhost/postgres')
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 

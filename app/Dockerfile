@@ -10,10 +10,10 @@ ENV PATH="${PATH}:/root/poetry/bin"
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-WORKDIR /y_lab
+WORKDIR /restaurant
 COPY /app .
 
 EXPOSE 8000
 
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root
+RUN poetry install

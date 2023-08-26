@@ -13,8 +13,12 @@ router = APIRouter()
 
 
 @router.get('/full_file')
-async def get_xlsx_menus():
-    get_xlsx_full_menu.delay()
+async def get_xlsx_menus(db: AsyncSession = Depends(get_session), rd: Redis = Depends(get_redis)):
+    menus_to_file = await menuService.get_menus_full(db, rd)
+    if not menus_to_file:
+        return {'ok': False}
+    # get_xlsx_full_menu(menus_to_file)
+    get_xlsx_full_menu.delay(menus_to_file)
     return {'ok': True}
 
 
