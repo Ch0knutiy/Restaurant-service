@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 
-
 @router.get('/{menu_id}/submenus', response_model=list[schemas.EnrichedSubmenuSchema])
 async def get_submenus(menu_id: UUID, db: AsyncSession = Depends(get_session), rd: Redis = Depends(get_redis)):
     return await submenuService.get_submenus(menu_id, db, rd)
