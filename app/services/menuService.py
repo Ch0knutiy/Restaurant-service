@@ -10,7 +10,17 @@ from schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+async def get_menus_full(db: AsyncSession, rd: Redis):
+    result = await repositoryCache.get_cache('menus_full', rd)
+    if result:
+        return json.loads(result)
+    result = await menuRepository.get_menus_full(db)
+    await repositoryCache.set_cache('menus_full', json.dumps(jsonable_encoder(result)), rd)
+    return result
+
+
 async def clear_menu_cache(rd: Redis, id: UUID | None = None) -> None:
+    await repositoryCache.del_cache('menus_full', rd)
     await repositoryCache.del_cache('menus', rd)
     if id:
         await repositoryCache.del_cache('menus' + str(id), rd)

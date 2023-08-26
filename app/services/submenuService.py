@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def clear_submenu_cache(rd: Redis, menu_id: UUID, id: UUID | None = None) -> None:
+    await repositoryCache.del_cache('menus_full', rd)
     await repositoryCache.del_cache('submenus' + str(menu_id), rd)
     if id:
         await repositoryCache.del_cache('submenu' + str(id), rd)

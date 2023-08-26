@@ -1,30 +1,32 @@
 version: '3.8'
 
 services:
-  fastapi_ylab:
-    container_name: fastapi_ylab
+  fastapi_restaurant:
+    container_name: fastapi_restaurant
     build:
       context: /
       dockerfile: app/Dockerfile
     environment:
-      DATABASE_URL: "postgres_y_lab/postgres"
+      DATABASE_URL: "postgres_restaurant/postgres"
     entrypoint: sh -c "poetry run python main.py"
+    volumes:
+      - proj:/usr/src/app
     networks:
-      - y_lab_network
+      - restaurant_network
     ports:
       - "8000:8000"
     healthcheck:
-      test: curl --fail http://fastapi_ylab:8000/health || exit 1
+      test: curl --fail http://fastapi_restaurant:8000/health || exit 1
       interval: 15s
       retries: 20
       start_period: 10s
       timeout: 10s
     depends_on:
-      postgres_y_lab:
+      postgres_restaurant:
         condition: service_healthy
 
-  postgres_y_lab:
-    container_name: postgres_y_lab
+  postgres_restaurant:
+    container_name: postgres_restaurant
     image: postgres:15.1-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
@@ -36,22 +38,52 @@ services:
     expose:
       - 5432
     networks:
-      - y_lab_network
+      - restaurant_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-U", "postgres", "-d", "postgres"]
       interval: 10s
       timeout: 30s
       retries: 5
       start_period: 80s
+    depends_on:
+      - restaurant_redis
+      - restaurant_rabbitmq
 
-  redis:
+
+  restaurant_redis:
     image: "redis:7.2-rc3-alpine"
-    container_name: y_lab_redis
+    container_name: restaurant_redis
     networks:
-      - y_lab_network
+      - restaurant_network
+
+  restaurant_rabbitmq:
+    image: "rabbitmq:3.13-rc-alpine"
+    container_name: restaurant_rabbitmq
+    networks:
+      - restaurant_network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  restaurant_worker:
+    container_name: restaurant_worker
+    build:
+      context: /
+      dockerfile: app/Dockerfile
+    entrypoint: sh -c "poetry run celery -A tasks.tasks:celery worker --loglevel=info"
+    volumes:
+      - proj:/usr/src/app
+    networks:
+      - restaurant_network
+    depends_on:
+      restaurant_rabbitmq:
+        condition: service_healthy
 
 networks:
-  y_lab_network:
-    name: y_lab_network
+  restaurant_network:
+    name: restaurant_network
 volumes:
   postgres_data:
+  proj:

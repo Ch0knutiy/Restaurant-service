@@ -18,6 +18,7 @@ async def clear_upper_cache(rd: Redis, menu_id: UUID, submenu_id: UUID):
 
 
 async def clear_dish_cache(rd: Redis, submenu_id: UUID, id: UUID | None = None) -> None:
+    await repositoryCache.del_cache('menus_full', rd)
     await repositoryCache.del_cache('dishes' + str(submenu_id), rd)
     if id:
         await repositoryCache.del_cache('dish' + str(id), rd)

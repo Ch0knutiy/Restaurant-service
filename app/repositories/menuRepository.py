@@ -4,6 +4,13 @@ from models import models
 from schemas import schemas
 from sqlalchemy import delete, func, select, union_all, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+
+async def get_menus_full(db: AsyncSession) -> list[models.Menu]:
+    result = await db.execute(select(models.Menu).
+                              options(selectinload(models.Menu.submenus).selectinload(models.Submenu.dishes)))
+    return list[models.Menu](result.scalars().all())
 
 
 async def menu_counts(id: UUID, db: AsyncSession) -> list[int]:
