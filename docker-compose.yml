@@ -10,7 +10,7 @@ services:
       DATABASE_URL: "postgres_restaurant/postgres"
     entrypoint: sh -c "poetry run python main.py"
     volumes:
-      - proj:/usr/src/app
+      - proj:/restaurant/vol
     networks:
       - restaurant_network
     ports:
@@ -71,10 +71,10 @@ services:
     container_name: restaurant_worker
     build:
       context: /
-      dockerfile: app/Dockerfile
+      dockerfile: app/DockerfileCelery
     entrypoint: sh -c "poetry run celery -A tasks.tasks:celery worker --loglevel=info"
     volumes:
-      - proj:/usr/src/app
+      - proj:/restaurant/vol
     networks:
       - restaurant_network
     depends_on:
