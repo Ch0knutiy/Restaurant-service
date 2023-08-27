@@ -32,7 +32,7 @@ def write_menu(menu, worksheet: Worksheet) -> None:
 
 
 def write(menus) -> None:
-    workbook = xlsxwriter.Workbook(r'example.xlsx')
+    workbook = xlsxwriter.Workbook(r'vol/example.xlsx')
     worksheet = workbook.add_worksheet()
     global row, col
     row, col = 0, 0
