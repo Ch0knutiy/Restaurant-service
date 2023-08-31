@@ -11,10 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /restaurant
-COPY /app/models ./models
-COPY /app/tasks ./tasks
-COPY /app/pyproject.toml .
-COPY /app/poetry.lock .
+COPY /app .
 
 EXPOSE 8000
 
